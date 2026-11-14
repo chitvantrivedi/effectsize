@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Effect size and statistical power</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600&family=Instrument+Sans:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#f6f7f9;--ink:#1b2430;--mute:#5d6877;--line:#d9dee5;--card:#fff;--a:#2b6cb0;--hot:#c2410c;--grey:#aab3bf;--v1:#2b6cb0;--v2:#0f766e;--v3:#7c3aed;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12171e;--ink:#e6eaf0;--mute:#9aa5b4;--line:#2b3441;--card:#1a212b;--a:#6aa9ef;--hot:#fb923c;--grey:#4a5666;--v1:#6aa9ef;--v2:#2dd4bf;--v3:#a78bfa}}
+:root[data-theme="dark"]{--bg:#12171e;--ink:#e6eaf0;--mute:#9aa5b4;--line:#2b3441;--card:#1a212b;--a:#6aa9ef;--hot:#fb923c;--grey:#4a5666;--v1:#6aa9ef;--v2:#2dd4bf;--v3:#a78bfa}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 "Instrument Sans",system-ui,sans-serif}
+main{max-width:780px;margin:0 auto;padding:24px 16px 48px}
+h1{font:600 30px/1.15 Newsreader,Georgia,serif;margin:0 0 6px}
+h2{font:600 20px/1.25 Newsreader,Georgia,serif;margin:0 0 4px}
+p{margin:0 0 10px;color:var(--mute);max-width:68ch}
+section{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:16px}
+.ctl{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:12px 0}
+label{display:block;font-size:13px;color:var(--mute)}label b{color:var(--ink);font-weight:600}
+input[type=range]{width:100%}
+.btns{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.btns label{display:inline-flex;gap:6px;align-items:center}
+button,select{font:500 14px "Instrument Sans",sans-serif;padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+button.pri{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--a);outline-offset:2px}
+svg{width:100%;height:auto;display:block}
+svg text{fill:var(--mute);font:11px "Instrument Sans",sans-serif}
+.read{display:flex;gap:22px;flex-wrap:wrap;margin:10px 0 4px;font-variant-numeric:tabular-nums}
+.read div{font-size:13px;color:var(--mute)}.read b{display:block;font:600 24px Newsreader,Georgia,serif;color:var(--ink)}
+.msg{padding:10px 12px;border-left:4px solid var(--hot);background:var(--bg);border-radius:6px;margin-top:10px;color:var(--ink)}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin:0 4px 0 12px}
+.leg{font-size:13px;color:var(--mute);margin-top:6px}
+</style></head><body><main>
+<h1>Effect size and statistical power</h1>
+<p>Effect size says how big a difference is. Power says how likely a study is to detect a difference of that size. This page uses the comparison of two groups, such as a treatment group and a control group.</p>
+
+<section>
+<h2>1. Effect size: the difference, measured in units of spread</h2>
+<p>A 5-point difference is large when scores barely vary and tiny when they vary a lot. Cohen's d divides the difference by the standard deviation, so it means the same thing on any scale. Rough benchmarks: 0.2 small, 0.5 medium, 0.8 large.</p>
+<div class="ctl">
+<label>Difference between group means: <b id="vdm"></b><input id="dm" type="range" min="0" max="30" step="0.5" value="5"></label>
+<label>Spread within each group (SD): <b id="vsd"></b><input id="sd" type="range" min="4" max="16" step="0.5" value="10"></label>
+</div>
+<div class="btns"><button class="pri" id="sweep">Slide the groups apart</button><button id="ns">Draw a new sample</button></div>
+<svg id="c1" viewBox="0 0 700 300" role="img" aria-label="Two overlapping group distributions with sample dots" style="margin-top:10px"></svg>
+<div class="read"><div>Cohen's d<b id="rd"></b></div><div>Size<b id="rs"></b></div><div>Overlap of the groups<b id="ro"></b></div><div>Chance a random treated person beats a random control<b id="rp"></b></div></div>
+<div class="msg" id="sam"></div>
+</section>
+
+<section>
+<h2>2. Power: will the study notice the effect?</h2>
+<p>Run the same study again and again. Each run produces a t statistic, which measures how far apart the sample means are relative to their noise. With no real effect, t scatters around 0 (grey curve), and a few runs still cross the cutoff by luck (violet, false positives). With a real effect, t scatters around a higher value (teal curve). <b style="color:var(--ink)">Power is the teal share past the cutoff</b>; the orange share is real effects the study missed.</p>
+<div class="ctl">
+<label>People per group: <b id="vn"></b><input id="n" type="range" min="5" max="300" step="1" value="30"></label>
+<label>Significance level (α): <select id="al"><option value="0.05">0.05</option><option value="0.01">0.01</option><option value="0.1">0.10</option></select></label>
+</div>
+<div class="btns"><strong style="font-size:13px;color:var(--mute)">In the real world:</strong>
+<label><input type="radio" name="w" value="r" checked>the effect exists</label><label><input type="radio" name="w" value="z">there is no effect</label></div>
+<div class="btns" style="margin-top:10px"><button class="pri" id="auto">Run experiments</button><button id="r1">Run 1</button><button id="r25">Run 25</button><button id="rr">Reset</button></div>
+<svg id="c2" viewBox="0 0 700 310" role="img" aria-label="Distributions of the t statistic with simulated experiments" style="margin-top:10px"></svg>
+<div class="leg"><span class="sw" style="background:var(--v3);margin-left:0"></span>false positives (α) <span class="sw" style="background:var(--hot)"></span>missed effects (β) <span class="sw" style="background:var(--v2)"></span>power <span class="sw" style="background:var(--grey)"></span>simulated runs, not significant</div>
+<div class="read"><div>Power (theory)<b id="pw"></b></div><div>Missed effects, β<b id="pb"></b></div><div>Center of the real-effect curve<b id="pd"></b></div><div>Simulated runs<b id="pn"></b></div><div>Significant so far<b id="ps"></b></div></div>
+<div class="msg" id="mcm"></div>
+</section>
+
+<section>
+<h2>3. Planning: how many people do you need?</h2>
+<p>Power rises with sample size and with effect size. Small effects need far larger samples: halving the effect size roughly quadruples the people needed. Dashed line = target power.</p>
+<div class="btns"><label>Target power <select id="tp"><option value="0.8">80%</option><option value="0.9">90%</option><option value="0.95">95%</option></select></label></div>
+<svg id="c3" viewBox="0 0 700 300" role="img" aria-label="Power as a function of sample size for several effect sizes" style="margin-top:10px"></svg>
+<div class="msg" id="pt"></div>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+function rng(s){return()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const nrm=r=>Math.sqrt(-2*Math.log(1-r()))*Math.cos(2*Math.PI*r());
+function lg(x){const c=[76.18009172947146,-86.50532032941677,24.01409824083091,-1.231739572450155,0.1208650973866179e-2,-0.5395239384953e-5];let y=x,t=x+5.5;t-=(x+.5)*Math.log(t);let s=1.000000000190015;for(const k of c)s+=k/++y;return -t+Math.log(2.5066282746310005*s/x)}
+function bcf(a,b,x){const qab=a+b,qap=a+1,qam=a-1,F=1e-30;let c=1,d=1-qab*x/qap;if(Math.abs(d)<F)d=F;d=1/d;let h=d;for(let m=1;m<=200;m++){const m2=2*m;let aa=m*(b-m)*x/((qam+m2)*(a+m2));d=1+aa*d;if(Math.abs(d)<F)d=F;c=1+aa/c;if(Math.abs(c)<F)c=F;d=1/d;h*=d*c;aa=-(a+m)*(qab+m)*x/((a+m2)*(qap+m2));d=1+aa*d;if(Math.abs(d)<F)d=F;c=1+aa/c;if(Math.abs(c)<F)c=F;d=1/d;const del=d*c;h*=del;if(Math.abs(del-1)<3e-12)break}return h}
+function ib(x,a,b){if(x<=0)return 0;if(x>=1)return 1;const bt=Math.exp(lg(a+b)-lg(a)-lg(b)+a*Math.log(x)+b*Math.log(1-x));return x<(a+1)/(a+b+2)?bt*bcf(a,b,x)/a:1-bt*bcf(b,a,1-x)/b}
+const pT=(t,v)=>ib(v/(v+t*t),v/2,.5);
+const tcrit=(a,v)=>{let lo=0,hi=60;for(let i=0;i<50;i++){const m=(lo+hi)/2;pT(m,v)>a?lo=m:hi=m}return lo};
+function erf(x){const s=Math.sign(x);x=Math.abs(x);const t=1/(1+.3275911*x);return s*(1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-.284496736)*t+.254829592)*t*Math.exp(-x*x))}
+const Phi=x=>.5*(1+erf(x/Math.SQRT2)),phi=x=>Math.exp(-x*x/2)/2.5066282746;
+/* noncentral t, by integrating over the chi-square noise in the denominator */
+const VG={};function vg(df){if(VG[df])return VG[df];const N=400,hi=df+10*Math.sqrt(2*df)+10,dv=hi/N,s=[],w=[];for(let i=0;i<N;i++){const x=(i+.5)*dv;s.push(Math.sqrt(x/df));w.push(Math.exp((df/2-1)*Math.log(x)-x/2-df/2*Math.LN2-lg(df/2))*dv)}return VG[df]={s,w}}
+const tpdf=(t,df,dl)=>{const{s,w}=vg(df);let r=0;for(let i=0;i<s.length;i++)r+=w[i]*s[i]*phi(t*s[i]-dl);return r};
+const power=(dl,df,a)=>{const tc=tcrit(a,df),{s,w}=vg(df);let r=0;for(let i=0;i<s.length;i++)r+=w[i]*((1-Phi(tc*s[i]-dl))+Phi(-tc*s[i]-dl));return r};
+function needN(d,a,tg){const ok=m=>power(d*Math.sqrt(m/2),2*m-2,a)>=tg;if(d<.02||!ok(5000))return null;let lo=2,hi=5000;while(hi-lo>1){const m=(lo+hi)>>1;ok(m)?hi=m:lo=m}return hi}
+const f=(x,k=2)=>x.toFixed(k);
+
+let d=.5,n=30,al=.05,real=true,df=58,dl=0,pw=0,tc=2,TM={min:-4.5,max:5},NB=70,cnt,tot,sigc,dsum,dc,last,mcr,auto=0,dispD=null,zC,zT,sk=0,ck='',shade='',lines='',sweepT=0,YM=1;
+
+function readParams(){const D=+$('dm').value,S=+$('sd').value;d=D/S;n=+$('n').value;al=+$('al').value;real=document.querySelector('[name=w]:checked').value==='r';df=2*n-2;dl=d*Math.sqrt(n/2);tc=tcrit(al,df);pw=power(dl,df,al);TM={min:-4.5,max:Math.max(5,(real?dl:0)+4.5,dl+4.5)};
+ $('vdm').textContent=f(D,1);$('vsd').textContent=f(S,1);$('vn').textContent=n}
+function resetMC(){cancelAnimationFrame(auto);auto=0;$('auto').textContent='Run experiments';cnt=new Array(NB).fill(0);tot=sigc=dsum=dc=0;last=null;mcr=rng((Math.random()*1e9)|0)}
+function newSample(){const r=rng(11+(sk++)*13);zC=[];zT=[];for(let i=0;i<20;i++){zC.push(nrm(r));zT.push(nrm(r))}}
+
+function draw1(){const Dv=dispD===null?+$('dm').value:dispD,S=+$('sd').value,dd=Dv/S,W=700,H=300,L=14,R=14,lo=10,hi=130,X=v=>L+(v-lo)/(hi-lo)*(W-L-R),base=H-76,sc=150*S*2.5066,Y=p=>base-p*sc,np=(x,m)=>Math.exp(-.5*((x-m)/S)**2)/(S*2.5066);
+ let a='',b='',o=`M${X(lo)},${base}`;
+ for(let x=lo;x<=hi;x++){const p1=np(x,60),p2=np(x,60+Dv);a+=(x>lo?'L':'M')+X(x)+','+Y(p1);b+=(x>lo?'L':'M')+X(x)+','+Y(p2);o+=`L${X(x)},${Y(Math.min(p1,p2))}`}
+ let s=`<path d="${o}L${X(hi)},${base}Z" fill="var(--grey)" fill-opacity=".5"/><path d="${a}" fill="none" stroke="var(--a)" stroke-width="2.5"/><path d="${b}" fill="none" stroke="var(--hot)" stroke-width="2.5"/><line x1="${L}" x2="${W-R}" y1="${base}" y2="${base}" stroke="var(--line)"/>`;
+ s+=`<line x1="${X(60)}" x2="${X(60)}" y1="48" y2="${base}" stroke="var(--a)" stroke-dasharray="4 3"/><line x1="${X(60+Dv)}" x2="${X(60+Dv)}" y1="48" y2="${base}" stroke="var(--hot)" stroke-dasharray="4 3"/>`;
+ if(Dv>.3)s+=`<line x1="${X(60)}" x2="${X(60+Dv)}" y1="40" y2="40" stroke="var(--ink)" stroke-width="2"/><text x="${(X(60)+X(60+Dv))/2}" y="33" text-anchor="middle" style="fill:var(--ink)">difference = ${f(Dv,1)}</text>`;
+ const len=S*(W-L-R)/(hi-lo);s+=`<line x1="${L+6}" x2="${L+6+len}" y1="22" y2="22" stroke="var(--mute)" stroke-width="2"/><text x="${L+6}" y="14">1 SD = ${f(S,1)}</text><text x="${X(60)-8}" y="${base-8}" text-anchor="end" style="fill:var(--a)">Control</text><text x="${X(60+Dv)+8}" y="${base-8}" style="fill:var(--hot)">Treatment</text>`;
+ let mc=0,mt=0;zC.forEach((z,i)=>{mc+=z;mt+=zT[i];const j=((i*37)%11)/11*12;s+=`<circle cx="${X(60+S*z)}" cy="${base+14+j}" r="3.5" fill="var(--a)" fill-opacity=".8"/><circle cx="${X(60+Dv+S*zT[i])}" cy="${base+38+j}" r="3.5" fill="var(--hot)" fill-opacity=".8"/>`});
+ for(let v=20;v<=120;v+=20)s+=`<text x="${X(v)}" y="${H-4}" text-anchor="middle">${v}</text>`;
+ $('c1').innerHTML=s;mc/=20;mt/=20;let vc=0,vt=0;zC.forEach((z,i)=>{vc+=(z-mc)**2;vt+=(zT[i]-mt)**2});const spz=Math.sqrt((vc+vt)/38),dh=(Dv/S+mt-mc)/spz;
+ $('rd').textContent=f(dd,2);$('rs').textContent=dd<.2?'below small':dd<.5?'small':dd<.8?'medium':'large';$('ro').textContent=f(2*Phi(-dd/2)*100,0)+'%';$('rp').textContent=f(Phi(dd/Math.SQRT2)*100,0)+'%';
+ $('sam').innerHTML=`The dots are one random sample of 20 per group. Its estimated d is <b>${f(dh,2)}</b>, while the true d is ${f(dd,2)}. The more the curves overlap, the harder it is to tell the groups apart from a sample.`}
+
+function draw2(){const W=700,H=310,L=14,R=14,T=26,B=40,{min:tmin,max:tmax}=TM,X=t=>L+(t-tmin)/(tmax-tmin)*(W-L-R),key=[df,dl,al,tmax].join('|');
+ if(key!==ck){ck=key;const N=140,ts=[...Array(N+1)].map((_,i)=>tmin+(tmax-tmin)*i/N),f0=ts.map(t=>tpdf(t,df,0)),f1=ts.map(t=>tpdf(t,df,dl));const ym=Math.max(...f0,...f1)*1.3;YM=ym;
+  const Y=v=>H-B-v/ym*(H-B-T),poly=(g,a,b,fill,op)=>{if(b<=a)return'';let s=`M${X(a)},${Y(0)}`;for(let i=0;i<=40;i++){const t=a+(b-a)*i/40;s+=`L${X(t)},${Y(g(t))}`}return`<path d="${s}L${X(b)},${Y(0)}Z" fill="${fill}" fill-opacity="${op}"/>`},g0=t=>tpdf(t,df,0),g1=t=>tpdf(t,df,dl),c=Math.min(tc,tmax);
+  shade=poly(g1,-c,c,'var(--hot)',.4)+poly(g1,c,tmax,'var(--v2)',.5)+poly(g1,tmin,-c,'var(--v2)',.5)+poly(g0,c,tmax,'var(--v3)',.75)+poly(g0,tmin,-c,'var(--v3)',.75);
+  const pa=(arr)=>arr.map((v,i)=>(i?'L':'M')+X(ts[i])+','+Y(v)).join('');
+  lines=`<path d="${pa(f0)}" fill="none" stroke="var(--mute)" stroke-width="2"/><path d="${pa(f1)}" fill="none" stroke="var(--v2)" stroke-width="2.5"/><line x1="${L}" x2="${W-R}" y1="${H-B}" y2="${H-B}" stroke="var(--line)"/><line x1="${X(tc)}" x2="${X(tc)}" y1="${T}" y2="${H-B}" stroke="var(--ink)" stroke-dasharray="4 3"/><line x1="${X(-tc)}" x2="${X(-tc)}" y1="${T}" y2="${H-B}" stroke="var(--ink)" stroke-dasharray="4 3"/><text x="${X(tc)+4}" y="${T+8}" style="fill:var(--ink)">cutoff t = ±${f(tc,2)}</text><text x="${X(0)}" y="${Y(f0[Math.round(N*(0-tmin)/(tmax-tmin))])-6}" text-anchor="middle">No real effect</text><text x="${X(dl)}" y="${Y(Math.max(...f1))-6}" text-anchor="middle" style="fill:var(--v2)">Real effect (d = ${f(d,2)})</text>`;
+  for(let t=Math.ceil(tmin);t<=tmax;t+=Math.ceil((tmax-tmin)/12))lines+=`<text x="${X(t)}" y="${H-24}" text-anchor="middle">${t}</text>`;lines+=`<text x="${L}" y="${H-6}">t statistic (how many noise units apart the sample means are)</text>`}
+ const ym=YM,Y=v=>H-B-v/ym*(H-B-T),bw=(tmax-tmin)/NB;let bars='';
+ if(tot)cnt.forEach((c,i)=>{if(!c)return;const t0=tmin+i*bw,mid=t0+bw/2,sg=Math.abs(mid)>=tc,h=Math.min(c/(tot*bw),ym*1.02),col=sg?(real?'var(--v2)':'var(--v3)'):'var(--grey)';bars+=`<rect x="${X(t0)+.5}" y="${Y(h)}" width="${X(t0+bw)-X(t0)-1}" height="${Y(0)-Y(h)}" fill="${col}" fill-opacity="${sg?.7:.6}"/>`});
+ let lm='';if(last){const col=last.sig?(real?'var(--v2)':'var(--v3)'):'var(--mute)',x=X(Math.max(tmin,Math.min(tmax,last.t)));lm=`<line x1="${x}" x2="${x}" y1="${T+16}" y2="${H-B}" stroke="${col}" stroke-width="2.5"/><circle cx="${x}" cy="${T+16}" r="5" fill="${col}"/><text x="${x+(x>W-170?-8:8)}" y="${T+20}" text-anchor="${x>W-170?'end':'start'}" style="fill:var(--ink)">latest run: t = ${f(last.t,2)}, p = ${last.p<.001?'< 0.001':f(last.p,3)} ${last.sig?'(significant)':'(not significant)'}</text>`}
+ $('c2').innerHTML=shade+bars+lines+lm;
+ $('pw').textContent=f(pw*100,1)+'%';$('pb').textContent=f((1-pw)*100,1)+'%';$('pd').textContent='t = '+f(dl,2);$('pn').textContent=tot;
+ const rate=tot?sigc/tot:0;$('ps').textContent=tot?`${sigc} (${f(rate*100,1)}%)`:'–';
+ let m=real?`Theory says <b>${f(pw*100,0)}%</b> of runs should be significant. In 100 repeats of this study, about ${Math.round(pw*100)} would find the effect and ${Math.round((1-pw)*100)} would miss it.`:`With no real effect, every significant result is a false positive. Theory says about <b>${f(al*100,0)}%</b> of runs will be, which is the meaning of α.`;
+ if(real&&dc>=5)m+=` Among the significant runs, the average estimated d is <b>${f(dsum/dc,2)}</b> versus the true ${f(d,2)}${dsum/dc>d*1.08?': when power is low, results that reach significance tend to exaggerate the effect.':'.'}`;
+ if(real&&d<.01)m='The groups are identical right now (d = 0). Raise the difference in section 1.';
+ $('mcm').innerHTML=m}
+
+function runOne(){const eff=real?d:0;let s1=0,q1=0,s2=0,q2=0;for(let i=0;i<n;i++){const a=nrm(mcr),b=eff+nrm(mcr);s1+=a;q1+=a*a;s2+=b;q2+=b*b}
+ const m1=s1/n,m2=s2/n,v1=(q1-n*m1*m1)/(n-1),v2=(q2-n*m2*m2)/(n-1),sp=Math.sqrt((v1+v2)/2),t=(m2-m1)/(sp*Math.sqrt(2/n)),p=pT(t,df),sig=p<al,bw=(TM.max-TM.min)/NB;
+ cnt[Math.max(0,Math.min(NB-1,Math.floor((t-TM.min)/bw)))]++;tot++;if(sig){sigc++;if(real){dsum+=(m2-m1)/sp;dc++}}last={t,p,sig}}
+function loop(){const k=tot<30?1:tot<150?3:12;for(let i=0;i<k;i++)runOne();draw2();if(tot>=5000){$('auto').textContent='Run experiments';auto=0;return}auto=requestAnimationFrame(loop)}
+
+function draw3(){const W=700,H=300,L=44,R=70,T=14,B=34,tg=+$('tp').value,X=v=>L+(v-5)/395*(W-L-R),Y=p=>H-B-p*(H-B-T),curve=(dd,col,w)=>{let s='';for(let m=5;m<=400;m+=5)s+=(m>5?'L':'M')+X(m)+','+Y(power(dd*Math.sqrt(m/2),2*m-2,al));return`<path d="${s}" fill="none" stroke="${col}" stroke-width="${w}"/>`};
+ let s=`<line x1="${L}" x2="${W-R}" y1="${H-B}" y2="${H-B}" stroke="var(--line)"/><line x1="${L}" x2="${L}" y1="${T}" y2="${H-B}" stroke="var(--line)"/>`;
+ [0,.2,.4,.6,.8,1].forEach(v=>s+=`<text x="${L-6}" y="${Y(v)+4}" text-anchor="end">${v*100}%</text><line x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)" stroke-opacity=".5"/>`);
+ for(let m=0;m<=400;m+=100)s+=`<text x="${X(Math.max(m,5))}" y="${H-18}" text-anchor="middle">${m}</text>`;s+=`<text x="${L}" y="${H-4}">People per group</text>`;
+ [[.2,'var(--v1)','small d = 0.2'],[.5,'var(--v3)','medium d = 0.5'],[.8,'var(--v2)','large d = 0.8']].forEach(([dd,c,lab])=>{s+=curve(dd,c,1.8)+`<text x="${W-R+4}" y="${Y(power(dd*Math.sqrt(200),798,al))+4}" style="fill:${c}">${lab}</text>`});
+ s+=`<line x1="${L}" x2="${W-R}" y1="${Y(tg)}" y2="${Y(tg)}" stroke="var(--ink)" stroke-dasharray="5 4"/>`;
+ if(d>.01)s+=curve(d,'var(--hot)',3.2);
+ const N=needN(d,al,tg);if(d>.01&&N&&N<=400)s+=`<circle cx="${X(N)}" cy="${Y(tg)}" r="5" fill="var(--hot)"/><text x="${X(N)+8}" y="${Y(tg)+16}" style="fill:var(--hot)">n = ${N}</text>`;
+ s+=`<circle cx="${X(n)}" cy="${Y(pw)}" r="6" fill="var(--card)" stroke="var(--ink)" stroke-width="2.5"/><text x="${X(n)+9}" y="${Y(pw)-8}" style="fill:var(--ink)">your study: ${f(pw*100,0)}%</text>`;
+ $('c3').innerHTML=s;
+ $('pt').innerHTML=d<.02?'The groups are identical right now (d = 0), so no sample size gives power. Raise the difference in section 1.':N?`To detect d = ${f(d,2)} with ${tg*100}% power at α = ${al}, you need about <b>${N}</b> people per group (${2*N} in total). Your study uses ${n} per group, giving power of ${f(pw*100,0)}%. The orange curve is your effect size; the others are the standard benchmarks.`:`d = ${f(d,2)} is so small that even 5,000 people per group would not reach ${tg*100}% power.`}
+
+function all(){readParams();draw1();draw2();draw3()}
+function change(){cancelAnimationFrame(sweepT);dispD=null;readParams();resetMC();draw1();draw2();draw3()}
+['dm','sd','n'].forEach(i=>$(i).oninput=change);$('al').onchange=change;document.querySelectorAll('[name=w]').forEach(e=>e.onchange=change);$('tp').onchange=draw3;
+$('ns').onclick=()=>{newSample();draw1()};
+$('sweep').onclick=()=>{cancelAnimationFrame(sweepT);const D=+$('dm').value,t0=performance.now(),tick=now=>{const u=Math.min(1,(now-t0)/2400);dispD=D*(u*u*(3-2*u));draw1();if(u<1)sweepT=requestAnimationFrame(tick);else dispD=null};sweepT=requestAnimationFrame(tick)};
+$('auto').onclick=()=>{if(auto){cancelAnimationFrame(auto);auto=0;$('auto').textContent='Run experiments';return}$('auto').textContent='Pause';auto=requestAnimationFrame(loop)};
+$('r1').onclick=()=>{runOne();draw2()};$('r25').onclick=()=>{for(let i=0;i<25;i++)runOne();draw2()};$('rr').onclick=()=>{resetMC();draw2()};
+newSample();readParams();resetMC();all();
+</script></body></html>
